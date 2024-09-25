@@ -1,0 +1,433 @@
+# V1 2024-09-11
+
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  EnableLogging:
+      Type: String
+      Description: Enable logging for CloudFront distribution.
+      Default: false
+
+  EnableCustomErrorResponses:
+      Type: String
+      Description: Enable custom error responses for CloudFront distribution.
+      Default: false
+
+  CloudFrontDefaultCertificate:
+      Type: String
+      Description: Use the default CloudFront certificate for SSL/TLS.
+      Default: true
+
+  AcmCertificateArn:
+      Type: String
+      Description: The ARN of the ACM certificate for SSL/TLS.
+      Default: ""
+
+  RestrictionType:
+      Type: String
+      Description: Type of restrictions for distribution (geo-restriction).
+      Default: none
+
+  CachePolicyId:
+      Type: String
+      Description: The ID of the cache policy.
+      Default: ""
+
+  LambdaFunctionAssociationsOriginRequestFunctionARN:
+      Type: String
+      Description: ARN of the Lambda function for origin request.
+      Default: ""
+
+  S3OriginAccessIdentity:
+      Type: String
+      Description: Origin access identity for S3 bucket.
+      Default: ""
+
+  Aliases:
+      Type: CommaDelimitedList
+      Description: List of CNAMEs (aliases) for the distribution.
+      Default: ""
+
+  Comment:
+      Type: String
+      Description: Comment to describe the CloudFront distribution.
+      Default: ""
+
+  ContinuousDeploymentPolicyId:
+      Type: String
+      Description: The ID of the continuous deployment policy.
+      Default: ""
+
+  DefaultRootObject:
+      Type: String
+      Description: The default root object of the distribution.
+      Default: index.html
+
+  Enabled:
+      Type: String
+      Description: Whether the distribution is enabled.
+      Default: true
+
+  HttpVersion:
+      Type: String
+      Description: The HTTP version for the distribution (HTTP2, HTTP3, or both).
+      Default: http2
+
+  IPV6Enabled:
+      Type: String
+      Description: Enable IPv6 for the distribution.
+      Default: true
+
+  PriceClass:
+      Type: String
+      Description: The price class for the distribution (PriceClass_100, PriceClass_200, or PriceClass_All).
+      Default: PriceClass_All
+
+  Staging:
+      Type: String
+      Description: Whether the distribution is in staging mode.
+      Default: false
+
+  WebACLId:
+      Type: String
+      Description: The ID of the WebACL associated with the distribution.
+      Default: ""
+
+  LoggingBucketName:
+      Type: String
+      Description: The S3 bucket name for logs.
+      Default: ""
+
+  LoggingBucketPrefix:
+      Type: String
+      Description: The prefix for logs in the S3 bucket.
+      Default: ""
+
+  LoggingIncludeCookies:
+      Type: String
+      Description: Whether cookies are included in the logs.
+      Default: false
+
+  SslSupportMethod:
+      Type: String
+      Description: The SSL/TLS support method (sni-only, vip).
+      Default: sni-only
+
+  MinimumProtocolVersion:
+      Type: String
+      Description: The minimum SSL/TLS protocol version.
+      Default: TLSv1.2_2021
+
+  GeoLocations:
+      Type: CommaDelimitedList
+      Description: List of allowed geo-locations for distribution.
+      Default: ""
+
+  AllowedMethods:
+      Type: CommaDelimitedList
+      Description: HTTP methods allowed for the distribution (GET, POST, etc.).
+      Default: "GET,HEAD"
+
+  CachedMethods:
+      Type: CommaDelimitedList
+      Description: HTTP methods cached by the distribution.
+      Default: "GET,HEAD"
+
+  Compress:
+      Type: String
+      Description: Enable automatic compression of objects.
+      Default: true
+
+  DefaultTTL:
+      Type: Number
+      Description: The default time-to-live (TTL) for cached objects.
+      Default: 86400
+
+  FieldLevelEncryptionId:
+      Type: String
+      Description: The ID of the field-level encryption configuration.
+      Default: ""
+
+  MaxTTL:
+      Type: Number
+      Description: The maximum TTL for cached objects.
+      Default: 31536000
+
+  MinTTL:
+      Type: Number
+      Description: The minimum TTL for cached objects.
+      Default: 0
+
+  RealtimeLogConfigArn:
+      Type: String
+      Description: ARN of the real-time log configuration.
+      Default: ""
+
+  SmoothStreaming:
+      Type: String
+      Description: Enable smooth streaming.
+      Default: false
+
+  TargetOriginId:
+      Type: String
+      Description: The origin ID for the distribution.
+      Default: ""
+
+#   TrustedKeyGroups:
+#       Type: CommaDelimitedList
+#       Description: Key groups trusted for signed URLs or cookies.
+#       Default: ""
+
+#   TrustedSigners:
+#       Type: CommaDelimitedList
+#       Description: Signers trusted for signed URLs or cookies.
+#       Default: ""
+
+  ViewerProtocolPolicy:
+      Type: String
+      Description: The protocol policy for the viewer (allow-all, redirect-to-https, https-only).
+      Default: redirect-to-https
+
+  ResponseHeadersPolicyId:
+      Type: String
+      Description: The ID of the response headers policy.
+      Default: ""
+
+  OriginRequestPolicyId:
+      Type: String
+      Description: The ID of the origin request policy.
+      Default: ""
+
+  QueryStringCacheKeys:
+      Type: CommaDelimitedList
+      Description: Cache keys for query strings.
+      Default: ""
+
+  CookiesForward:
+      Type: String
+      Description: Cookie forwarding behavior (none, whitelist, all).
+      Default: none
+
+  Headers:
+      Type: CommaDelimitedList
+      Description: Headers forwarded to the origin.
+      Default: ""
+
+  QueryString:
+      Type: String
+      Description: Whether query strings are forwarded to the origin.
+      Default: false
+
+  IncludeBody:
+      Type: String
+      Description: Include the body in origin request policy.
+      Default: false
+
+  ErrorCachingMinTTL:
+      Type: Number
+      Description: The minimum TTL for error responses.
+      Default: 300
+
+  ErrorCode:
+      Type: Number
+      Description: HTTP error code for custom error responses.
+      Default: 404
+
+  ResponseCode:
+      Type: Number
+      Description: HTTP response code for custom error responses.
+      Default: 200
+
+  ResponsePagePath:
+      Type: String
+      Description: Path to custom error page.
+      Default: ""
+
+  ConnectionAttempts:
+      Type: Number
+      Description: Number of attempts for connecting to origin.
+      Default: 3
+
+  ConnectionTimeout:
+      Type: Number
+      Description: Timeout in seconds for origin connection.
+      Default: 10
+
+  DomainName:
+      Type: String
+      Description: The domain name of the origin.
+      Default: ""
+
+  OriginId:
+      Type: String
+      Description: The origin ID for the distribution.
+      Default: ""
+
+  OriginAccessControlId:
+      Type: String
+      Description: The ID for the origin access control configuration.
+      Default: ""
+
+  OriginPath:
+      Type: String
+      Description: Path prefix for origin requests.
+      Default: ""
+
+  OriginShieldEnabled:
+      Type: String
+      Description: Enable Origin Shield for the distribution.
+      Default: false
+
+  OriginShieldRegion:
+      Type: String
+      Description: Region for Origin Shield.
+      Default: ""
+
+  HTTPPort:
+      Type: Number
+      Description: HTTP port for the origin.
+    #   Default: 80
+
+  HTTPSPort:
+      Type: Number
+      Description: HTTPS port for the origin.
+    #   Default: 443
+
+  OriginKeepaliveTimeout:
+      Type: Number
+      Description: Keep-alive timeout in seconds for origin connection.
+      Default: 5
+
+  OriginProtocolPolicy:
+      Type: String
+      Description: Protocol policy for the origin (http-only, https-only, match-viewer).
+      Default: https-only
+
+  OriginReadTimeout:
+      Type: Number
+      Description: Timeout for reading from the origin.
+      Default: 30
+
+  OriginSSLProtocols:
+      Type: CommaDelimitedList
+      Description: List of SSL protocols supported by the origin.
+      Default: "TLSv1.2"
+
+Conditions:
+  EnableLoggingCondition: !Equals [!Ref EnableLogging, true]
+  EnableCustomErrorResponsesCondition: !Equals [!Ref EnableCustomErrorResponses, true]
+  UseCloudFrontDefaultCertificateCondition: !Equals [!Ref CloudFrontDefaultCertificate, true]
+  UseAcmCertificateCondition: !Not [!Equals [!Ref AcmCertificateArn, '']]
+  UseGeoRestrictionCondition: !Not [!Equals [!Ref RestrictionType, 'none']]
+  UseCachePolicyIdCondition: !Not [!Equals [!Ref CachePolicyId, '']]
+  UseLambdaFunctionAssociationsOriginRequestCondition: !Not [!Equals [!Ref LambdaFunctionAssociationsOriginRequestFunctionARN, '']]
+  S3OriginAccessIdentityProvidedCondition: !Not [!Equals [!Ref S3OriginAccessIdentity, '']]
+
+Resources:
+  CloudFrontDistribution:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::CloudFront::Distribution"
+    DeletionPolicy: "Retain"
+    Properties:
+      DistributionConfig:
+        Aliases: !Ref Aliases
+        Comment: !Ref Comment
+        ContinuousDeploymentPolicyId: !Ref ContinuousDeploymentPolicyId
+        DefaultRootObject: !Ref DefaultRootObject
+        Enabled: !Ref Enabled
+        HttpVersion: !Ref HttpVersion
+        IPV6Enabled: !Ref IPV6Enabled
+        PriceClass: !Ref PriceClass
+        Staging: !Ref Staging
+        WebACLId: !Ref WebACLId
+
+        Logging: !If
+          - EnableLoggingCondition
+          - Bucket: !Ref LoggingBucketName
+            Prefix: !Ref LoggingBucketPrefix
+            IncludeCookies: !Ref LoggingIncludeCookies
+          - !Ref "AWS::NoValue"
+
+        ViewerCertificate:
+          !If
+          - UseAcmCertificateCondition
+          - AcmCertificateArn: !Ref AcmCertificateArn
+            SslSupportMethod: !Ref SslSupportMethod
+            MinimumProtocolVersion: !Ref MinimumProtocolVersion
+          - !If
+            - UseCloudFrontDefaultCertificateCondition
+            - CloudFrontDefaultCertificate: !Ref CloudFrontDefaultCertificate
+            - !Ref "AWS::NoValue"
+
+        Restrictions: !If 
+        - UseGeoRestrictionCondition
+        - GeoRestriction:
+            RestrictionType: !Ref RestrictionType
+            Locations: !Ref GeoLocations
+        - !Ref "AWS::NoValue"
+
+        DefaultCacheBehavior:
+          AllowedMethods: !Ref AllowedMethods 
+          CachedMethods: !Ref CachedMethods 
+          Compress: !Ref Compress 
+          DefaultTTL: !Ref DefaultTTL 
+          FieldLevelEncryptionId: !Ref FieldLevelEncryptionId 
+          MaxTTL: !Ref MaxTTL 
+          MinTTL: !Ref MinTTL 
+          RealtimeLogConfigArn: !Ref RealtimeLogConfigArn 
+          SmoothStreaming: !Ref SmoothStreaming
+          TargetOriginId: !Ref TargetOriginId 
+        #   TrustedKeyGroups: !Ref TrustedKeyGroups  
+        #   TrustedSigners: !Ref TrustedSigners  
+          ViewerProtocolPolicy: !Ref ViewerProtocolPolicy
+          ResponseHeadersPolicyId: !Ref ResponseHeadersPolicyId 
+          
+          CachePolicyId: !If [UseCachePolicyIdCondition, !Ref CachePolicyId, !Ref "AWS::NoValue"]
+          OriginRequestPolicyId: !If [UseCachePolicyIdCondition, !Ref OriginRequestPolicyId, !Ref "AWS::NoValue"]
+
+          ForwardedValues:
+            QueryStringCacheKeys: !If [UseCachePolicyIdCondition, !Ref "AWS::NoValue", !Ref QueryStringCacheKeys]
+            Cookies:
+              Forward: !If [UseCachePolicyIdCondition, !Ref "AWS::NoValue", !Ref CookiesForward]
+            Headers: !If [UseCachePolicyIdCondition, !Ref "AWS::NoValue", !Ref Headers]
+            QueryString: !If [UseCachePolicyIdCondition, !Ref "AWS::NoValue", !Ref QueryString]
+
+          LambdaFunctionAssociations: 
+            - !If
+              - UseLambdaFunctionAssociationsOriginRequestCondition
+              - LambdaFunctionARN: !Ref LambdaFunctionAssociationsOriginRequestFunctionARN
+                EventType: "origin-request"
+                IncludeBody: !Ref IncludeBody
+              - !Ref "AWS::NoValue"
+
+        CustomErrorResponses: 
+          - !If
+            - EnableCustomErrorResponsesCondition
+            - ErrorCachingMinTTL: !Ref ErrorCachingMinTTL
+              ErrorCode: !Ref ErrorCode
+              ResponseCode: !Ref ResponseCode
+              ResponsePagePath: !Ref ResponsePagePath
+            - !Ref "AWS::NoValue"
+
+        Origins:
+          - ConnectionAttempts: !Ref ConnectionAttempts
+            ConnectionTimeout: !Ref ConnectionTimeout
+            DomainName: !Ref DomainName
+            Id: !Ref OriginId
+            OriginAccessControlId: !Ref OriginAccessControlId
+            OriginPath: !Ref OriginPath
+            OriginShield: 
+              Enabled: !Ref OriginShieldEnabled  
+              OriginShieldRegion: !Ref OriginShieldRegion  
+          - !If
+            - S3OriginAccessIdentityProvidedCondition
+            - S3OriginConfig: 
+                 OriginAccessIdentity: !Ref "AWS::NoValue"
+            - 
+              CustomOriginConfig: 
+                HTTPPort: !Ref HTTPPort
+                HTTPSPort: !Ref HTTPSPort
+                OriginKeepaliveTimeout: !Ref OriginKeepaliveTimeout
+                OriginProtocolPolicy: !Ref OriginProtocolPolicy
+                OriginReadTimeout: !Ref OriginReadTimeout
+                OriginSSLProtocols: !Ref OriginSSLProtocols
