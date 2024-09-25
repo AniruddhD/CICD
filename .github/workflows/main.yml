@@ -16,6 +16,17 @@ jobs:
         run: | 
           pwd
           ls -lhrt
-          cat cloudfront.yml
+      
+      - name: create S3 bucket
+        run: |
+          aws s3 mb s3://CICD
+
+      - name: upload file in s3 bucket
+        run: |
+          aws s3 cp cloudfront.yml s3://CICD 
+
+      - name: create stack
+        run: |
+          aws cloudformation create-stack --stack-name CICD --template-url s3://CICD/cloudfront.yml
 
 
